@@ -1,0 +1,44 @@
+version: '3'
+services:
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    hostname: traefik
+    restart: always
+    networks:
+      - traefik
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/log:/etc/traefik/log:rw
+      - ./traefik/config/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/config/config.yml:/etc/traefik/config.yml:ro
+      - ./traefik/acme/acme.json:/etc/traefik/acme.json:rw
+      - ./traefik/config/users:/etc/traefik/users:ro
+    environment:
+      - "TZ=Asia/Seoul"
+      - "HOST_URL=$HOST_URL"
+      - "HOST_IP=$HOST_IP"
+    labels:
+      - "traefik.enable=true"
+      # HTTP-TO-HTTPS
+      - "traefik.http.routers.http-to-https.rule=hostregexp(`{host:.+}`)"
+      - "traefik.http.routers.http-to-https.entrypoints=web"
+      - "traefik.http.routers.http-to-https.middlewares=http-to-https"
+      - "traefik.http.middlewares.http-to-https.redirectscheme.scheme=https"
+      # Dashboard
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.$HOST_URL`)"
+      - "traefik.http.routers.dashboard.tls=true"
+      - "traefik.http.routers.dashboard.tls.options=TLSv12@file"
+      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.entrypoints=web,websecure"
+      - "traefik.http.routers.dashboard.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.usersfile=/etc/traefik/users"
+
+networks:
+  traefik:
+    name: traefik
