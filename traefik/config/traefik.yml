@@ -1,0 +1,82 @@
+################################################################
+# Global configuration
+################################################################
+
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: true
+
+################################################################
+# EntryPoints configuration
+################################################################
+
+entryPoints:
+  web:
+    address: :80
+  websecure:
+    address: :443
+  traefik:
+    address: :8080
+
+################################################################
+# Traefik logs configuration
+################################################################
+
+log:
+  level: DEBUG
+  filepath: "/etc/traefik/log/traefik.log"
+
+################################################################
+# Access logs configuration
+################################################################
+
+accessLog:
+  filePath: "/etc/traefik/log/access.log"
+  bufferingSize: 100
+  filters:
+    statusCodes: ["400-499"]
+
+################################################################
+# API and dashboard configuration
+################################################################
+
+api:
+  insecure: false
+  dashboard: true
+  debug: true
+
+################################################################
+# Ping configuration
+################################################################
+
+ping:
+  entryPoint: traefik
+
+################################################################
+# Providers configuration
+################################################################
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    watch: true
+
+  file:
+    filename: "/etc/traefik/config.yml"
+    watch: true
+
+#  redis:
+#    endpoints: "redis:6379"
+
+###############################################################
+# Cert
+################################################################
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      caServer: "https://acme-v02.api.letsencrypt.org/directory"
+      email: 
+      storage: "/etc/traefik/acme.json"
+      tlsChallenge: true

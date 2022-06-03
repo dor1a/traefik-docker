@@ -1,0 +1,45 @@
+################################################################
+# HTTP
+################################################################
+
+# example (nginx)
+http:
+  routers:
+    nginx-https: 
+      rule: 'Host(`nginx.{{env "HOST_URL"}}`)'
+      service: nginx
+      entryPoints:
+        - websecure
+      tls:
+        options: TLSv12
+        certResolver: letsencrypt
+
+  services:
+    nginx:
+      loadBalancer:
+        servers:
+          - url: 'http://{{env "HOST_IP"}}:80'
+
+#  middlewares:
+#    https-redirect:
+#      redirectScheme:
+#        scheme: https
+#        permanent: true
+#        port: 443
+
+################################################################
+# TLS
+###############################################################
+
+tls:
+  options:
+    TLSv12:
+      sniStrict: true
+      minVersion: VersionTLS12
+      cipherSuites:
+        - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+      curvePreferences:
+        - secp521r1
+        - secp384r1
